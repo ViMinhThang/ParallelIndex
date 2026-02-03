@@ -1,6 +1,6 @@
 package commands;
 
-import features.FileSearcher;
+import features.ParallelFileSearcher;
 import model.SearchResult;
 
 import java.io.File;
@@ -41,7 +41,7 @@ public class SearchCommand implements Command {
         
         long startTime = System.currentTimeMillis();
         
-        FileSearcher searcher = new FileSearcher(files, keyword);
+        ParallelFileSearcher searcher = new ParallelFileSearcher(files, keyword);
         List<SearchResult> results = ctx.getForkJoinPool().invoke(searcher);
         
         long duration = System.currentTimeMillis() - startTime;

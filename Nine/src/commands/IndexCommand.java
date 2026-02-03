@@ -1,7 +1,7 @@
 package commands;
 
-import features.FileAnalyzer;
-import features.FolderExplorer;
+import features.ParallelFileAnalyzer;
+import features.ParallelFolderExplorer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -51,12 +51,12 @@ public class IndexCommand implements Command {
         // Start consumers
         System.out.println("[Starting] " + NUM_CONSUMERS + " consumer threads...");
         for (int i = 0; i < NUM_CONSUMERS; i++) {
-            consumerPool.submit(new FileAnalyzer(fileQueue, globalIndex));
+            consumerPool.submit(new ParallelFileAnalyzer(fileQueue, globalIndex));
         }
         
         // Start producer
-        System.out.println("[Starting] FolderExplorer...");
-        FolderExplorer explorer = new FolderExplorer(rootFolder, fileQueue, ctx.getStats());
+        System.out.println("[Starting] ParallelFolderExplorer...");
+        ParallelFolderExplorer explorer = new ParallelFolderExplorer(rootFolder, fileQueue, ctx.getStats());
         ctx.getForkJoinPool().invoke(explorer);
         
         // Collect indexed files for search

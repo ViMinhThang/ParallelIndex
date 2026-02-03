@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FileSearcher extends RecursiveTask<List<SearchResult>> {
+public class ParallelFileSearcher extends RecursiveTask<List<SearchResult>> {
 
     private static final int THRESHOLD = 10;
     private final List<File> files;
     private final String keyword;
     private AtomicInteger querieCount;
-    public FileSearcher(List<File> files, String keyword) {
+    
+    public ParallelFileSearcher(List<File> files, String keyword) {
         this.files = files;
         this.keyword = keyword;
         this.querieCount = new AtomicInteger(0);
@@ -32,15 +33,13 @@ public class FileSearcher extends RecursiveTask<List<SearchResult>> {
         List<File> firstHalf = files.subList(0, mid);
         List<File> secondHalf = files.subList(mid, files.size());
         
-        FileSearcher task1 = new FileSearcher(firstHalf, keyword);
-        FileSearcher task2 = new FileSearcher(secondHalf, keyword);
+        ParallelFileSearcher task1 = new ParallelFileSearcher(firstHalf, keyword);
+        ParallelFileSearcher task2 = new ParallelFileSearcher(secondHalf, keyword);
         
-
         task1.fork();
         List<SearchResult> result2 = task2.compute();
         List<SearchResult> result1 = task1.join();
         
-        // Merge results from both subtasks
         List<SearchResult> allResults = new ArrayList<>(result1);
         allResults.addAll(result2);
         return allResults;
@@ -65,7 +64,7 @@ public class FileSearcher extends RecursiveTask<List<SearchResult>> {
                     }
                 }
             } catch (IOException e) {
-
+                // Skip files that can't be read
             }
         }
         
