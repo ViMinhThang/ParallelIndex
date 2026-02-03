@@ -1,19 +1,25 @@
+package features;
+
+import model.SearchResult;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FileSearcher extends RecursiveTask<List<SearchResult>> {
 
     private static final int THRESHOLD = 10;
     private final List<File> files;
     private final String keyword;
-
+    private AtomicInteger querieCount;
     public FileSearcher(List<File> files, String keyword) {
         this.files = files;
         this.keyword = keyword;
+        this.querieCount = new AtomicInteger(0);
     }
 
     @Override
@@ -53,6 +59,7 @@ public class FileSearcher extends RecursiveTask<List<SearchResult>> {
                 
                 for (int i = 0; i < lines.size(); i++) {
                     String line = lines.get(i);
+                    querieCount.addAndGet(1);
                     if (line.contains(keyword)) {
                         results.add(new SearchResult(file, i + 1, line.trim()));
                     }
@@ -63,5 +70,9 @@ public class FileSearcher extends RecursiveTask<List<SearchResult>> {
         }
         
         return results;
+    }
+
+    public AtomicInteger getQuerieCount() {
+        return querieCount;
     }
 }

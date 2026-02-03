@@ -1,3 +1,7 @@
+package commands;
+
+import model.Stats;
+
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -5,15 +9,14 @@ import java.util.concurrent.ForkJoinPool;
 
 public class AppContext {
     private File rootFolder;
-    private ForkJoinPool forkJoinPool;
-    private ConcurrentHashMap<String,Integer> globalIndex;
+    private final ForkJoinPool forkJoinPool;
+    private final ConcurrentHashMap<String, Integer> globalIndex;
     private List<File> indexedFiles;
-
-    public AppContext(File rootFolder, ForkJoinPool forkJoinPool, ConcurrentHashMap<String, Integer> globalIndex, List<File> indexedFiles) {
-        this.rootFolder = rootFolder;
-        this.forkJoinPool = forkJoinPool;
-        this.globalIndex = globalIndex;
-        this.indexedFiles = indexedFiles;
+    private Stats stats;
+    public AppContext() {
+        this.forkJoinPool = new ForkJoinPool();
+        this.globalIndex = new ConcurrentHashMap<>();
+        this.stats = new Stats();
     }
 
     public File getRootFolder() {
@@ -28,16 +31,8 @@ public class AppContext {
         return forkJoinPool;
     }
 
-    public void setForkJoinPool(ForkJoinPool forkJoinPool) {
-        this.forkJoinPool = forkJoinPool;
-    }
-
     public ConcurrentHashMap<String, Integer> getGlobalIndex() {
         return globalIndex;
-    }
-
-    public void setGlobalIndex(ConcurrentHashMap<String, Integer> globalIndex) {
-        this.globalIndex = globalIndex;
     }
 
     public List<File> getIndexedFiles() {
@@ -46,5 +41,13 @@ public class AppContext {
 
     public void setIndexedFiles(List<File> indexedFiles) {
         this.indexedFiles = indexedFiles;
+    }
+
+    public Stats getStats() {
+        return stats;
+    }
+
+    public void setStats(Stats stats) {
+        this.stats = stats;
     }
 }
