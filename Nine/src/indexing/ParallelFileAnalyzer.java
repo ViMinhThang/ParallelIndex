@@ -1,4 +1,4 @@
-package features;
+package indexing;
 
 import java.io.File;
 import java.util.concurrent.BlockingQueue;
@@ -8,7 +8,7 @@ public class ParallelFileAnalyzer implements Runnable {
     private final BlockingQueue<File> queue;
     private final ConcurrentHashMap<String, Integer> globalIndex;
     private final static String POISON_PILL = "ThisisExit";
-    
+
     public ParallelFileAnalyzer(BlockingQueue<File> queue, ConcurrentHashMap<String, Integer> globalIndex) {
         this.queue = queue;
         this.globalIndex = globalIndex;
@@ -32,7 +32,7 @@ public class ParallelFileAnalyzer implements Runnable {
     public void indexFile(File file) {
         globalIndex.compute(file.getName(), (key, val) -> (val == null) ? 1 : val + 1);
     }
-    
+
     public boolean isPoisonPill(File file) {
         return file.getName().equals(POISON_PILL);
     }

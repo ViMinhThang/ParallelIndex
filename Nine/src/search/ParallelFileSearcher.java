@@ -1,6 +1,4 @@
-package features;
-
-import model.SearchResult;
+package search;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +14,7 @@ public class ParallelFileSearcher extends RecursiveTask<List<SearchResult>> {
     private final List<File> files;
     private final String keyword;
     private AtomicInteger querieCount;
-    
+
     public ParallelFileSearcher(List<File> files, String keyword) {
         this.files = files;
         this.keyword = keyword;
@@ -28,18 +26,18 @@ public class ParallelFileSearcher extends RecursiveTask<List<SearchResult>> {
         if (files.size() <= THRESHOLD) {
             return searchSequentially();
         }
-        
+
         int mid = files.size() / 2;
         List<File> firstHalf = files.subList(0, mid);
         List<File> secondHalf = files.subList(mid, files.size());
-        
+
         ParallelFileSearcher task1 = new ParallelFileSearcher(firstHalf, keyword);
         ParallelFileSearcher task2 = new ParallelFileSearcher(secondHalf, keyword);
-        
+
         task1.fork();
         List<SearchResult> result2 = task2.compute();
         List<SearchResult> result1 = task1.join();
-        
+
         List<SearchResult> allResults = new ArrayList<>(result1);
         allResults.addAll(result2);
         return allResults;
@@ -47,15 +45,15 @@ public class ParallelFileSearcher extends RecursiveTask<List<SearchResult>> {
 
     private List<SearchResult> searchSequentially() {
         List<SearchResult> results = new ArrayList<>();
-        
+
         for (File file : files) {
             if (file.isDirectory()) {
                 continue;
             }
-            
+
             try {
                 List<String> lines = Files.readAllLines(file.toPath());
-                
+
                 for (int i = 0; i < lines.size(); i++) {
                     String line = lines.get(i);
                     querieCount.addAndGet(1);
@@ -67,7 +65,7 @@ public class ParallelFileSearcher extends RecursiveTask<List<SearchResult>> {
                 // Skip files that can't be read
             }
         }
-        
+
         return results;
     }
 

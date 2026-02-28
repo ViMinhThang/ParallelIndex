@@ -1,4 +1,4 @@
-package features;
+package indexing;
 
 import model.Stats;
 
@@ -13,7 +13,7 @@ public class ParallelFolderExplorer extends RecursiveAction {
     private final File folder;
     private final BlockingQueue<File> fileQueue;
     private final Stats stats;
-    
+
     public ParallelFolderExplorer(File folder, BlockingQueue<File> fileQueue, Stats stats) {
         this.folder = folder;
         this.fileQueue = fileQueue;

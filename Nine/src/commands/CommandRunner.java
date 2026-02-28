@@ -13,7 +13,7 @@ public class CommandRunner {
         this.commandMap = new HashMap<>();
         this.ctx = new AppContext();
         this.scanner = new Scanner(System.in);
-        
+
         registerCommands();
     }
 
@@ -25,6 +25,7 @@ public class CommandRunner {
         addCommand(new HelpCommand(commands));
         addCommand(new ExitCommand());
         addCommand(new StatsCommand());
+        addCommand(new BenchmarkCommand());
     }
 
     private void addCommand(Command cmd) {
@@ -34,16 +35,16 @@ public class CommandRunner {
 
     public void run() {
         printWelcome();
-        
+
         while (true) {
             System.out.println();
             System.out.print("Enter command (or 'help'): ");
             String input = scanner.nextLine().trim().toLowerCase();
-            
+
             if (input.isEmpty()) {
                 continue;
             }
-            
+
             Command cmd = commandMap.get(input);
             if (cmd != null) {
                 cmd.execute(ctx, scanner);
@@ -60,13 +61,14 @@ public class CommandRunner {
         System.out.println("  A parallel/multithreaded file search tool");
         System.out.println("=".repeat(50));
         System.out.println();
-        System.out.println("Commands: folder, index, search, help, exit");
+        System.out.println("Commands: folder, index, search, benchmark, stats, help, exit");
         System.out.println();
         System.out.println("Quick start:");
         System.out.println("  1. Use 'folder' to set the directory to scan");
         System.out.println("  2. Use 'index' to scan all files");
         System.out.println("  3. Use 'search' to find content in files");
         System.out.println("  3. Use 'stats' to print of the statistics of the cli");
+        System.out.println("  4. Use 'benchmark' to compare sequential vs parallel performance");
 
     }
 }
