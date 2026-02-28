@@ -6,6 +6,7 @@ import benchmark.BenchmarkResult;
 import benchmark.FileIndexingBenchmark;
 import benchmark.FileSearchBenchmark;
 import benchmark.FolderTraversalBenchmark;
+import indexing.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class BenchmarkCommand implements Command {
         BenchmarkRunner runner = new BenchmarkRunner(WARMUP_RUNS, MEASURED_RUNS);
         BenchmarkTask[] tasks = {
                 new FolderTraversalBenchmark(rootFolder, ctx.getForkJoinPool()),
-                new FileIndexingBenchmark(rootFolder, textFiles, ctx.getForkJoinPool()),
+                new FileIndexingBenchmark(textFiles),
                 new FileSearchBenchmark(textFiles, keyword, ctx.getForkJoinPool())
         };
 
@@ -117,15 +118,8 @@ public class BenchmarkCommand implements Command {
         for (File child : children) {
             if (child.isDirectory()) {
                 collectTextFilesRecursive(child, files);
-            } else {
-                String name = child.getName().toLowerCase();
-                if (name.endsWith(".java") || name.endsWith(".txt") ||
-                        name.endsWith(".md") || name.endsWith(".xml") ||
-                        name.endsWith(".json") || name.endsWith(".html") ||
-                        name.endsWith(".css") || name.endsWith(".js") ||
-                        name.endsWith(".properties") || name.endsWith(".yml")) {
-                    files.add(child);
-                }
+            } else if (FileUtils.isTextFile(child)) {
+                files.add(child);
             }
         }
     }

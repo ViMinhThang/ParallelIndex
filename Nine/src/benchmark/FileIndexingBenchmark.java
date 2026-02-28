@@ -1,8 +1,6 @@
 package benchmark;
 
 import indexing.ParallelFileAnalyzer;
-import indexing.ParallelFolderExplorer;
-import model.Stats;
 
 import java.io.File;
 import java.util.HashMap;
@@ -14,14 +12,10 @@ public class FileIndexingBenchmark implements BenchmarkTask {
 
     private static final int NUM_CONSUMERS = 4;
 
-    private final File rootFolder;
     private final List<File> files;
-    private final ForkJoinPool forkJoinPool;
 
-    public FileIndexingBenchmark(File rootFolder, List<File> files, ForkJoinPool forkJoinPool) {
-        this.rootFolder = rootFolder;
+    public FileIndexingBenchmark(List<File> files) {
         this.files = files;
-        this.forkJoinPool = forkJoinPool;
     }
 
     @Override
@@ -43,15 +37,15 @@ public class FileIndexingBenchmark implements BenchmarkTask {
     public void runParallel() {
         BlockingQueue<File> fileQueue = new LinkedBlockingQueue<>();
         ConcurrentHashMap<String, Integer> index = new ConcurrentHashMap<>();
-        Stats tempStats = new Stats();
 
         ExecutorService consumerPool = Executors.newFixedThreadPool(NUM_CONSUMERS);
         for (int i = 0; i < NUM_CONSUMERS; i++) {
             consumerPool.submit(new ParallelFileAnalyzer(fileQueue, index));
         }
 
-        ParallelFolderExplorer explorer = new ParallelFolderExplorer(rootFolder, fileQueue, tempStats);
-        forkJoinPool.invoke(explorer);
+        for (File file : files) {
+            fileQueue.offer(file);
+        }
 
         for (int i = 0; i < NUM_CONSUMERS; i++) {
             try {

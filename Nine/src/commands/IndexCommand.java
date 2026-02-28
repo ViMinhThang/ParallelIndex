@@ -11,8 +11,6 @@ import java.util.concurrent.*;
 
 public class IndexCommand implements Command {
 
-    private static final int NUM_CONSUMERS = 4;
-
     @Override
     public String getName() {
         return "index";
@@ -32,40 +30,37 @@ public class IndexCommand implements Command {
             return;
         }
 
+        int numConsumers = Runtime.getRuntime().availableProcessors();
+
         System.out.println();
         System.out.println("[Indexing] " + rootFolder.getAbsolutePath());
 
         ctx.getStats().reset();
 
-        // Create shared data structures
         BlockingQueue<File> fileQueue = new LinkedBlockingQueue<>();
         ConcurrentHashMap<String, Integer> globalIndex = ctx.getGlobalIndex();
         globalIndex.clear();
 
-        List<File> indexedFiles = new ArrayList<>();
+        ConcurrentLinkedQueue<File> textFileCollector = new ConcurrentLinkedQueue<>();
 
-        // Create consumer pool
-        ExecutorService consumerPool = Executors.newFixedThreadPool(NUM_CONSUMERS);
+        ExecutorService consumerPool = Executors.newFixedThreadPool(numConsumers);
 
         long startTime = System.currentTimeMillis();
 
-        // Start consumers
-        System.out.println("[Starting] " + NUM_CONSUMERS + " consumer threads...");
-        for (int i = 0; i < NUM_CONSUMERS; i++) {
+        System.out.println("[Starting] " + numConsumers + " consumer threads...");
+        for (int i = 0; i < numConsumers; i++) {
             consumerPool.submit(new ParallelFileAnalyzer(fileQueue, globalIndex));
         }
 
-        // Start producer
         System.out.println("[Starting] ParallelFolderExplorer...");
-        ParallelFolderExplorer explorer = new ParallelFolderExplorer(rootFolder, fileQueue, ctx.getStats());
+        ParallelFolderExplorer explorer = new ParallelFolderExplorer(
+                rootFolder, fileQueue, ctx.getStats(), textFileCollector);
         ctx.getForkJoinPool().invoke(explorer);
 
-        // Collect indexed files for search
-        collectFilesRecursively(ctx, rootFolder, indexedFiles);
+        List<File> indexedFiles = new ArrayList<>(textFileCollector);
         ctx.setIndexedFiles(indexedFiles);
 
-        // Send poison pills
-        for (int i = 0; i < NUM_CONSUMERS; i++) {
+        for (int i = 0; i < numConsumers; i++) {
             try {
                 fileQueue.put(new File("ThisisExit"));
             } catch (InterruptedException e) {
@@ -73,7 +68,6 @@ public class IndexCommand implements Command {
             }
         }
 
-        // Wait for consumers
         consumerPool.shutdown();
         try {
             consumerPool.awaitTermination(60, TimeUnit.SECONDS);
@@ -82,35 +76,11 @@ public class IndexCommand implements Command {
         }
 
         long duration = System.currentTimeMillis() - startTime;
-        // Update stats with final count
         ctx.getStats().addIndexedFiles(indexedFiles.size());
-        // Print results
         System.out.println();
-        System.out.println("[Done] Indexing complet!");
+        System.out.println("[Done] Indexing complete!");
         System.out.println("  Files indexed: " + globalIndex.size());
         System.out.println("  Searchable files: " + indexedFiles.size());
         System.out.println("  Time: " + duration + " ms");
-    }
-
-    private void collectFilesRecursively(AppContext ctx, File folder, List<File> files) {
-        File[] children = folder.listFiles();
-        if (children == null)
-            return;
-
-        for (File child : children) {
-            if (child.isDirectory()) {
-                ctx.getStats().incrementDirs();
-                collectFilesRecursively(ctx, child, files);
-            } else {
-                String name = child.getName().toLowerCase();
-                if (name.endsWith(".java") || name.endsWith(".txt") ||
-                        name.endsWith(".md") || name.endsWith(".xml") ||
-                        name.endsWith(".json") || name.endsWith(".html") ||
-                        name.endsWith(".css") || name.endsWith(".js") ||
-                        name.endsWith(".properties") || name.endsWith(".yml")) {
-                    files.add(child);
-                }
-            }
-        }
     }
 }

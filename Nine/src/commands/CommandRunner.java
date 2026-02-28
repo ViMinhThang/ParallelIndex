@@ -26,6 +26,8 @@ public class CommandRunner {
         addCommand(new ExitCommand());
         addCommand(new StatsCommand());
         addCommand(new BenchmarkCommand());
+        addCommand(new SaveCommand());
+        addCommand(new LoadCommand());
     }
 
     private void addCommand(Command cmd) {
@@ -61,14 +63,16 @@ public class CommandRunner {
         System.out.println("  A parallel/multithreaded file search tool");
         System.out.println("=".repeat(50));
         System.out.println();
-        System.out.println("Commands: folder, index, search, benchmark, stats, help, exit");
+        System.out.println("Commands: folder, index, search, save, load, benchmark, stats, help, exit");
         System.out.println();
         System.out.println("Quick start:");
         System.out.println("  1. Use 'folder' to set the directory to scan");
         System.out.println("  2. Use 'index' to scan all files");
         System.out.println("  3. Use 'search' to find content in files");
-        System.out.println("  3. Use 'stats' to print of the statistics of the cli");
-        System.out.println("  4. Use 'benchmark' to compare sequential vs parallel performance");
+        System.out.println("  4. Use 'save' to save the index to disk");
+        System.out.println("  5. Use 'load' to load a saved index from disk");
+        System.out.println("  6. Use 'benchmark' to compare sequential vs parallel performance");
+        System.out.println("  7. Use 'stats' to print the statistics of the cli");
 
     }
 }
